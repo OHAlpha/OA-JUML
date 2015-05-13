@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="UI Efficiency Statistics Generator" default="build" xmlns:jacoco="antlib:org.jacoco.ant">
-	<property name="mainpack" value="org.oalpha.ptl.grapheditor" />
+	<property name="mainpack" value="org.oalpha.ptl.juml" />
 	<property name="src.dir" value="src/main/java" />
 	<property name="build.dir" value="target/classes" />
 	<property name="doc.dir" value="doc" />
