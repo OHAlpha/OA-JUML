@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="UI Efficiency Statistics Generator" default="build" xmlns:jacoco="antlib:org.jacoco.ant">
+	<property name="mainpack" value="org.oalpha.ptl.grapheditor" />
+	<property name="src.dir" value="src/main/java" />
+	<property name="build.dir" value="target/classes" />
+	<property name="doc.dir" value="doc" />
+	<property name="test.src.dir" value="src/test/java" />
+	<property name="test.stub.src.dir" value="src/stub/java" />
+	<property name="test.mock.src.dir" value="src/mock/java" />
+	<property name="test.build.dir" value="target/classes/test" />
+	<property name="test.stub.build.dir" value="target/classes/stub" />
+	<property name="test.mock.build.dir" value="target/classes/mock" />
+	<property name="test.doc.dir" value="testdoc" />
+	<property name="jars.dir" value="classpath" />
+	<property name="reports.test.unit.dir" value="reports/unit" />
+	<property name="reports.test.int.dir" value="reports/integration" />
+	<property name="reports.test.sys.dir" value="reports/system" />
+	<property name="reports.jacoco.dir" value="reports/coverage" />
+	<taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+		<classpath path="${jars.dir}/jacocoant.jar" />
+	</taskdef>
+	<path id="main-classpath">
+		<fileset dir="${jars.dir}">
+			<include name="*.jar" />
+		</fileset>
+		<pathelement path="${build.dir}" />
+	</path>
+	<path id="test-classpath">
+		<fileset dir="${jars.dir}">
+			<include name="*.jar" />
+		</fileset>
+		<pathelement path="${build.dir}" />
+		<pathelement path="${test.stub.build.dir}" />
+		<pathelement path="${test.mock.build.dir}" />
+		<pathelement path="${test.build.dir}" />
+	</path>
+	<target name="build">
+		<mkdir dir="${jars.dir}" />
+		<mkdir dir="${build.dir}" />
+		<javac includeantruntime="false" destdir="${build.dir}">
+			<src path="${src.dir}" />
+			<classpath refid="main-classpath" />
+		</javac>
+	</target>
+	<target name="build-stub" depends="build">
+		<mkdir dir="${test.stub.build.dir}" />
+		<javac includeantruntime="false" destdir="${test.stub.build.dir}">
+			<src path="${test.stub.src.dir}" />
+			<classpath refid="main-classpath" />
+		</javac>
+	</target>
+	<target name="build-mock" depends="build">
+		<mkdir dir="${test.mock.build.dir}" />
+		<javac includeantruntime="false" destdir="${test.mock.build.dir}">
+			<src path="${test.mock.src.dir}" />
+			<classpath refid="main-classpath" />
+		</javac>
+	</target>
+	<target name="build-test" depends="build,build-stub,build-mock">
+		<mkdir dir="${test.build.dir}" />
+		<javac includeantruntime="false" destdir="${test.build.dir}">
+			<src path="${test.src.dir}" />
+			<classpath refid="test-classpath" />
+		</javac>
+	</target>
+	<target name="unittest" depends="build-test">
+		<mkdir dir="${reports.test.unit.dir}" />
+		<jacoco:coverage destfile="jacoco.unit.exec">
+			<junit fork="true" haltonfailure="false" printsummary="on">
+				<classpath>
+					<pathelement location="${build.dir}" />
+					<fileset dir="${jars.dir}">
+						<include name="*.jar" />
+					</fileset>
+					<pathelement location="${test.build.dir}" />
+					<pathelement location="${test.stub.build.dir}" />
+					<pathelement location="${test.mock.build.dir}" />
+				</classpath>
+				<formatter type="xml" />
+				<test name="${mainpack}.UnitTest" todir="${reports.test.unit.dir}">
+				</test>
+			</junit>
+		</jacoco:coverage>
+	</target>
+	<target name="integrationtest" depends="unittest">
+		<mkdir dir="${reports.test.int.dir}" />
+		<jacoco:coverage destfile="jacoco.integration.exec">
+			<junit fork="true" haltonfailure="false" printsummary="on">
+				<classpath>
+					<pathelement location="${build.dir}" />
+					<fileset dir="${jars.dir}">
+						<include name="*.jar" />
+					</fileset>
+					<pathelement location="${test.build.dir}" />
+				</classpath>
+				<formatter type="xml" />
+				<test name="${mainpack}.IntegrationTest" todir="${reports.test.int.dir}">
+				</test>
+			</junit>
+		</jacoco:coverage>
+	</target>
+	<target name="systemtest" depends="integrationtest">
+		<mkdir dir="${reports.test.sys.dir}" />
+		<jacoco:coverage destfile="jacoco.system.exec">
+			<junit fork="true" haltonfailure="false" printsummary="on">
+				<classpath>
+					<pathelement location="${build.dir}" />
+					<fileset dir="${jars.dir}">
+						<include name="*.jar" />
+					</fileset>
+					<pathelement location="${test.build.dir}" />
+				</classpath>
+				<formatter type="xml" />
+				<test name="${mainpack}.SystemTest" todir="${reports.test.sys.dir}">
+				</test>
+			</junit>
+		</jacoco:coverage>
+	</target>
+	<target name="coverage" depends="systemtest">
+		<mkdir dir="${reports.jacoco.dir}" />
+		<jacoco:report>
+			<executiondata>
+				<file file="jacoco.unit.exec" />
+				<file file="jacoco.integration.exec" />
+				<file file="jacoco.system.exec" />
+			</executiondata>
+			<structure name="Graph Editor">
+				<classfiles>
+					<fileset dir="${build.dir}" />
+				</classfiles>
+				<sourcefiles encoding="UTF-8">
+					<fileset dir="${src.dir}" />
+				</sourcefiles>
+			</structure>
+			<html destdir="${reports.jacoco.dir}" />
+		</jacoco:report>
+	</target>
+	<target name="gen-jdoc">
+		<mkdir dir="${doc.dir}" />
+		<javadoc packagenames="${mainpack}.*" sourcepath="${src.dir}" destdir="${doc.dir}" version="true" windowtitle="${ant.project.name}" Private="true">
+			<doctitle>
+				<![CDATA[= UI Efficiency Statistics Generator =]]>
+			</doctitle>
+			<bottom>
+				<![CDATA[Copyright © 2011. All Rights Reserved.]]>
+			</bottom>
+		</javadoc>
+		<echo message="java doc has been generated!" />
+	</target>
+	<target name="gen-test-jdoc">
+		<mkdir dir="${test.doc.dir}" />
+		<javadoc packagenames="${mainpack}.*" sourcepath="${test.src.dir}" destdir="${test.doc.dir}" version="true" windowtitle="${ant.project.name} - Tests" Private="true">
+			<classpath refid="main-classpath" />
+			<doctitle>
+				<![CDATA[= UI Efficiency Statistics Generator =]]>
+			</doctitle>
+			<bottom>
+				<![CDATA[Copyright © 2011. All Rights Reserved.]]>
+			</bottom>
+		</javadoc>
+		<echo message="java doc has been generated!" />
+	</target>
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<delete dir="${test.build.dir}" />
+		<delete dir="${test.stub.build.dir}" />
+		<delete dir="${test.mock.build.dir}" />
+		<delete dir="${reports.unit.dir}" />
+		<delete dir="${reports.int.dir}" />
+		<delete dir="${reports.system.dir}" />
+		<delete dir="${reports.jacoco.dir}" />
+		<delete file="jacoco.unit.exec}" />
+		<delete file="jacoco.integration.exec}" />
+		<delete file="jacoco.system.exec}" />
+		<delete file="jacoco.exec}" />
+	</target>
+</project>
