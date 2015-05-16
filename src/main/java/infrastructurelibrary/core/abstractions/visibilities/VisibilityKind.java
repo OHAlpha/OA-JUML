@@ -9,8 +9,9 @@ package infrastructurelibrary.core.abstractions.visibilities;
  * @author oalpha
  *
  */
+@SuppressWarnings( "javadoc" )
 public enum VisibilityKind {
-
-  // TODO: add public, private, protected and package
-
+  
+  Public, Private, Protected, Package;
+  
 }
